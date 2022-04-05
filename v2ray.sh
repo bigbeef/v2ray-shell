@@ -24,3 +24,4 @@ case "$num" in
 	;;
 esac
 }
+start_menu
