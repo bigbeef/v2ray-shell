@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 #开始菜单
 start_menu(){
 clear
