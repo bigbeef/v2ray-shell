@@ -2,7 +2,7 @@
 
 id=$(cat /proc/sys/kernel/random/uuid)
 path=$(cat /proc/sys/kernel/random/uuid)
-dockerDataPath="/app/dockerTest"
+dockerDataPath="/app/docker"
 v2rayPort=44444
 
 # 安装docker
@@ -21,37 +21,46 @@ installDocker() {
 # 安装v2ray
 installV2ray() {
 	mkdir -p ${dockerDataPath}/v2ray
-	cat <<EOF >${dockerDataPath}/v2ray/config-ws.json
-{
-    "inbounds": [
-        {
-            "port": ${v2rayPort},
-            "protocol": "vless",
-            "settings": {
-                "clients": [
-                    {
-                        "id": "${id}",
-                        "level": 0
-                    }
-                ],
-                "decryption": "none"
-            },
-            "streamSettings": {
-                "network": "ws",
-                "security": "none",
-                "wsSettings": {
-                    "path": "/${path}"
-                }
-            }
-        }
-    ],
-    "outbounds": [
-        {
-            "protocol": "freedom"
-        }
-    ]
-}
-EOF
+	cat > ${dockerDataPath}/v2ray/config-ws.json << EOF 
+		{
+			"inbounds": [
+				{
+					"port": ${v2rayPort},
+					"protocol": "vless",
+					"settings": {
+						"clients": [
+							{
+								"id": "${id}",
+								"level": 0
+							}
+						],
+						"decryption": "none"
+					},
+					"streamSettings": {
+						"network": "ws",
+						"security": "none",
+						"wsSettings": {
+							"path": "/${path}"
+						}
+					}
+				}
+			],
+			"outbounds": [
+				{
+					"protocol": "freedom"
+				}
+			]
+		}
+	EOF
+	docker pull v2fly/v2fly-core
+	docker rm -f v2ray-ws
+	docker run -d \
+	--restart=unless-stopped \
+	--name v2ray-ws \
+	--network host \
+	--log-driver=none \
+	-v ${dockerDataPath}/v2ray:/etc/v2ray \
+	-d v2fly/v2fly-core v2ray -config=/etc/v2ray/config-ws.json
 	start_menu
 }
 
